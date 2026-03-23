@@ -1,8 +1,8 @@
-# @lhi/n8n-creator
+# @daily-caller/n8n-creator
 
-Secure, production-ready n8n workflow builder with a mandatory TDD security audit on every build.
+Secure, production-ready n8n workflow builder for [The Daily Caller](https://dailycaller.com) with a mandatory TDD security audit baked into every build.
 
-Works with **MCP tools or direct REST API**. Reads all config from `.env`. Auto-saves workflows to a git-tracked folder structure. Enforces a 7-stage build protocol — threat model through security audit — for every workflow, every time. Installs the `/n8n-creator` skill into Claude Code on first run.
+Works with **MCP tools or direct REST API**. Reads all config from `.env`. Auto-saves workflows to a git-tracked folder structure. Enforces a 7-stage build protocol — threat model through security audit — for every workflow, every time. Installs the `/n8n-creator` Claude Code skill automatically on first run.
 
 ---
 
@@ -26,15 +26,15 @@ Works with **MCP tools or direct REST API**. Reads all config from `.env`. Auto-
 
 ```bash
 # 1. Scaffold into your project directory
-npx @lhi/n8n-creator init
+npx @daily-caller/n8n-creator init
 
 # 2. Fill in your n8n connection details
 nano .env   # set N8N_API_URL and N8N_API_KEY
 
 # 3. Verify connectivity
-npx @lhi/n8n-creator health
+npx @daily-caller/n8n-creator health
 
-# 4. Open Claude Code — the /n8n-creator skill is ready
+# 4. Open Claude Code — /n8n-creator is ready
 ```
 
 After `init`, the `/n8n-creator` Claude Code skill is installed to `.claude/commands/n8n-creator.md` in your project directory automatically.
@@ -46,39 +46,70 @@ After `init`, the `/n8n-creator` Claude Code skill is installed to `.claude/comm
 ### Option A — npx (recommended, no clone required)
 
 ```bash
-npx @lhi/n8n-creator init
+npx @daily-caller/n8n-creator init
 ```
 
-Scaffolds the following into the current directory:
+Scaffolds the following into the current directory (skips any file that already exists — safe to re-run):
 
 | Path | Purpose |
 |---|---|
-| `.claude/commands/n8n-creator.md` | Claude Code skill — `/n8n-creator` command |
+| `.claude/commands/n8n-creator.md` | Claude Code skill — activates `/n8n-creator` command |
 | `SKILL.md` | Skill source file |
 | `.env` / `.env.example` | n8n connection config |
 | `references/` | API reference, security checklist, design patterns, testing guide |
-| `workflows/_templates/` | `deploy.sh` + `rollback.sh` + `README.md` templates |
+| `workflows/_templates/` | `deploy.sh`, `rollback.sh`, `README.md` starter templates |
 | `workflows/launch-all.sh` | Deploy all saved workflows at once |
-| `scripts/` | Shell health check and REST API helper functions |
+| `scripts/health-check.sh` | Shell health check script |
+| `scripts/n8n-api.sh` | Shell functions wrapping the n8n REST API |
 | `.gitignore` | Ignores `.env`, `node_modules/`, logs |
 
-### Option B — Clone
+**Expected output:**
+
+```
+══════════════════════════════════════
+  n8n-creator — Project Init
+══════════════════════════════════════
+  ✓  .env.example created
+  ✓  .env created — fill in N8N_API_URL and N8N_API_KEY
+  ⚠  Edit .env before running any workflow commands
+  ✓  SKILL.md created
+  →  Copying references/...
+  ✓  Created references/api-reference.md
+  ...
+  ✓  Claude Code skill installed → .claude/commands/n8n-creator.md
+
+  ✓  Init complete!
+
+  Next steps:
+    1. Edit .env  (N8N_API_URL + N8N_API_KEY)
+    2. Run: npx @daily-caller/n8n-creator audit      — verify tdd-audit works
+    3. Run: npx @daily-caller/n8n-creator health     — check n8n connectivity
+    4. Use /n8n-creator inside Claude Code to start building
+```
+
+### Option B — Clone (for contributors)
 
 ```bash
-git clone https://github.com/lcanady/n8n-creator
+git clone https://github.com/daily-caller/n8n-creator
 cd n8n-creator
 bash setup.sh
 ```
 
-`setup.sh` checks prerequisites (Node ≥18, curl, git, jq), runs `npm install`, creates `.env`, makes all scripts executable, optionally initializes a git repo, and tests n8n connectivity.
+`setup.sh` runs 5 steps:
 
-**Prerequisites checked by `setup.sh`:**
+1. **Prerequisites check** — Node ≥18, npm, curl (required), git, jq (recommended)
+2. **npm install** — installs `dotenv` and `@lhi/tdd-audit`
+3. **Environment file** — copies `.env.example` → `.env` if not present
+4. **Make scripts executable** — `chmod +x` all `.sh` files
+5. **Final checks** — initializes git repo if needed, tests n8n connectivity
+
+**Prerequisites:**
 
 | Tool | Required | Notes |
 |---|---|---|
 | Node.js ≥18 | Yes | |
-| npm | Yes | |
-| curl | Yes | Required for REST API calls |
+| npm | Yes | Bundled with Node |
+| curl | Yes | Required for all REST API calls |
 | git | Recommended | Workflow versioning |
 | jq | Recommended | Pretty API output — `brew install jq` |
 
@@ -87,37 +118,41 @@ bash setup.sh
 ## npx Commands
 
 ```bash
-npx @lhi/n8n-creator init     # scaffold project files + install Claude Code skill
-npx @lhi/n8n-creator audit    # run @lhi/tdd-audit security scan
-npx @lhi/n8n-creator health   # check n8n instance connectivity + API auth
-npx @lhi/n8n-creator help     # show all commands
+npx @daily-caller/n8n-creator init     # scaffold project files + install Claude Code skill
+npx @daily-caller/n8n-creator audit    # run @lhi/tdd-audit security scan
+npx @daily-caller/n8n-creator health   # check n8n instance connectivity + API auth
+npx @daily-caller/n8n-creator help     # show all commands
 ```
 
 ### `init`
 
-Copies all project files into the current directory. Skips any file that already exists (safe to re-run). Also installs the `/n8n-creator` Claude Code skill to `.claude/commands/n8n-creator.md`.
+Copies all project files into the current working directory. Skips any file that already exists. Installs the `/n8n-creator` skill to `.claude/commands/n8n-creator.md`.
 
 ### `audit`
 
-Runs `@lhi/tdd-audit` — passes all arguments through:
+Runs `@lhi/tdd-audit`. All arguments are passed through:
 
 ```bash
-npx @lhi/n8n-creator audit --scan-only    # print findings, no skill install
-npx @lhi/n8n-creator audit --skip-scan    # install skill files only
-npx @lhi/n8n-creator audit --local        # install to ./ instead of ~/
-npx @lhi/n8n-creator audit --claude       # write to ~/.claude/ instead of ~/.agents/
-npx @lhi/n8n-creator audit --with-hooks   # install pre-commit security gate
+npx @daily-caller/n8n-creator audit --scan-only    # print findings, no skill install
+npx @daily-caller/n8n-creator audit --skip-scan    # install skill files only
+npx @daily-caller/n8n-creator audit --local        # install to ./ instead of ~/
+npx @daily-caller/n8n-creator audit --claude       # write to ~/.claude/ instead of ~/.agents/
+npx @daily-caller/n8n-creator audit --with-hooks   # install pre-commit security gate
 ```
 
 ### `health`
 
-Reads `.env`, calls `$N8N_API_URL/healthz` and `$N8N_API_URL/api/v1/workflows?limit=1`, and reports:
+Reads `.env`, hits `$N8N_API_URL/healthz` and `$N8N_API_URL/api/v1/workflows?limit=1`, and reports:
 
 ```
   ✓  Health: OK
   ✓  API Auth: OK
   →  Active workflows: 3
 ```
+
+### `help`
+
+Prints available commands and usage.
 
 ---
 
@@ -131,7 +166,7 @@ After `init`, the `/n8n-creator` slash command is available inside Claude Code:
 
 This triggers the full 7-stage secure workflow build protocol. The skill auto-detects whether MCP tools are available and routes accordingly — no configuration needed.
 
-The skill file lives at `.claude/commands/n8n-creator.md` in your project. It is automatically loaded by Claude Code when you open the directory.
+The skill file lives at `.claude/commands/n8n-creator.md` in your project. Claude Code loads it automatically when you open the directory.
 
 ---
 
@@ -231,9 +266,9 @@ N8N_WEBHOOK_BASE_URL=https://n8n.yourdomain.com
 Runs a **Red → Green → Refactor** cycle for each finding. Does not mark the task complete until the audit is clean.
 
 ```bash
-npx @lhi/n8n-creator audit    # via npx (any directory)
-npm run tdd-audit              # from cloned repo
-npm run audit                  # alias
+npx @daily-caller/n8n-creator audit    # via npx (any directory)
+npm run tdd-audit                       # from cloned repo
+npm run audit                           # alias
 ```
 
 ---
@@ -325,4 +360,4 @@ The workflow at `.github/workflows/publish.yml` runs `npm publish --access publi
 
 ## License
 
-MIT
+MIT — [The Daily Caller](https://dailycaller.com)
