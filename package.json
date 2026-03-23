@@ -17,11 +17,11 @@
   "homepage": "https://github.com/lcanady/n8n-creator",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lcanady/n8n-creator.git"
+    "url": "git+https://github.com/lcanady/n8n-creator.git"
   },
   "license": "MIT",
   "bin": {
-    "n8n-creator": "./bin/n8n-creator.js"
+    "n8n-creator": "bin/n8n-creator.js"
   },
   "main": "./lib/cli.js",
   "files": [
