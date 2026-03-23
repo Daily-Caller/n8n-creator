@@ -347,14 +347,34 @@ Copied to `references/` on `init`:
 
 ## Publishing
 
-Releases are published to npm automatically via GitHub Actions on any `v*` tag:
+On any `v*` tag push, GitHub Actions publishes to **both** registries in parallel:
+
+| Registry | Install from |
+|---|---|
+| [npm](https://www.npmjs.com/package/@daily-caller/n8n-creator) | `npm install @daily-caller/n8n-creator` |
+| [GitHub Packages](https://github.com/daily-caller/n8n-creator/pkgs/npm/n8n-creator) | `npm install @daily-caller/n8n-creator --registry https://npm.pkg.github.com` |
+
+**To release:**
 
 ```bash
 npm version patch   # or minor / major
 git push && git push --tags
 ```
 
-The workflow at `.github/workflows/publish.yml` runs `npm publish --access public --provenance` using `NPM_TOKEN` from repository secrets.
+**Required secrets** in the `daily-caller/n8n-creator` repository settings:
+
+| Secret | Used by | How to get |
+|---|---|---|
+| `NPM_TOKEN` | npm publish | npmjs.com → Access Tokens → Automation token |
+| `GITHUB_TOKEN` | GitHub Packages publish | Automatically provided by Actions — no setup needed |
+
+**Installing from GitHub Packages** requires a GitHub token with `read:packages` scope:
+
+```bash
+# .npmrc in consuming project
+@daily-caller:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
 
 ---
 

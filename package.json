@@ -1,6 +1,6 @@
 {
-  "name": "@lhi/n8n-creator",
-  "version": "1.0.5",
+  "name": "@daily-caller/n8n-creator",
+  "version": "1.1.0",
   "description": "Secure n8n workflow builder with mandatory TDD audit on every build",
   "keywords": [
     "n8n",
@@ -14,10 +14,10 @@
     "skill",
     "webhook"
   ],
-  "homepage": "https://github.com/lcanady/n8n-creator",
+  "homepage": "https://github.com/daily-caller/n8n-creator",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lcanady/n8n-creator.git"
+    "url": "git+https://github.com/daily-caller/n8n-creator.git"
   },
   "license": "MIT",
   "bin": {
@@ -49,6 +49,7 @@
     "node": ">=18"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }
