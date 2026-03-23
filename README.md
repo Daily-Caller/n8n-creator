@@ -3,7 +3,8 @@
 **Ship n8n workflows with confidence. Every build audited. Every deployment tracked. Nothing reaches production until it passes.**
 
 [![npm version](https://img.shields.io/npm/v/@daily-caller/n8n-creator)](https://www.npmjs.com/package/@daily-caller/n8n-creator)
-[![CI](https://github.com/Daily-Caller/n8n-creator/actions/workflows/publish.yml/badge.svg)](https://github.com/Daily-Caller/n8n-creator/actions)
+[![Publish](https://github.com/Daily-Caller/n8n-creator/actions/workflows/publish.yml/badge.svg)](https://github.com/Daily-Caller/n8n-creator/actions/workflows/publish.yml)
+[![Security Tests](https://img.shields.io/badge/security%20tests-14%20passing-brightgreen)](https://github.com/Daily-Caller/n8n-creator/tree/main/tests/security)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
@@ -12,6 +13,7 @@
 
 - [The Problem](#the-problem)
 - [Who This Is For](#who-this-is-for)
+- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [How It Works](#how-it-works)
 - [CI/CD Integration](#cicd-integration)
@@ -20,6 +22,10 @@
 - [The 7-Stage Security Protocol](#the-7-stage-security-protocol)
 - [Environment Variables](#environment-variables)
 - [What's Included After init](#whats-included-after-init)
+- [The Full Story for Your PM](#the-full-story-for-your-pm)
+- [Shell API Helpers](#shell-api-helpers)
+- [Testing](#testing)
+- [Contributing](#contributing)
 - [Publishing](#publishing)
 
 ---
@@ -47,6 +53,20 @@ pipeline in 60 seconds.
 | **Engineering managers** | A CI gate that blocks insecure workflows from merging. Audit results posted on every PR. One command to see the health of your entire automation stack. |
 | **Automation engineers** | Scaffolding, proven patterns, shell helpers, and a 10-point security checklist — so you can ship fast without cutting corners. |
 | **DevOps / platform teams** | n8n workflows treated like first-class code: versioned, reviewed, deployed via API, rollback-ready. |
+
+---
+
+## Prerequisites
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| Node.js | ≥ 18 | Required by the CLI |
+| npm | ≥ 9 | Comes with Node 18 |
+| n8n instance | any recent | Self-hosted or n8n Cloud |
+| curl | any | Used by `health` and `deploy` |
+| jq | any | Used by shell helpers in `scripts/` |
+
+You do **not** need to clone this repo. All commands work via `npx`.
 
 ---
 
@@ -218,9 +238,10 @@ before the deploy stage. Safe to run early and often.
 
 **Catches:**
 - Missing required fields (`name`, `nodes`, `connections`)
+- Type errors — `nodes` must be an array, `connections` must be an object (not just truthy)
 - Nodes missing `type` or `name`
 - Webhooks with no authentication configured *(security)*
-- Potential hardcoded credentials in node parameters *(security)*
+- Hardcoded credentials across 13 common key names: `password`, `secret`, `secretKey`, `apiKey`, `api_key`, `token`, `accessToken`, `bearerToken`, `clientSecret`, `client_secret`, `privateKey`, `authToken`, and more *(security)*
 
 The `--ci` flag exits with code `1` on failure (for GitHub Actions / other CI).
 
@@ -284,6 +305,9 @@ status, and recent execution health.
 
 **For PMs:** Use `--output=report.md` to write a file you can attach to a weekly
 review, commit to the repo as a snapshot, or post to Slack.
+
+> **Note:** `--output=` paths must stay within your project directory. Absolute paths
+> and `..` traversals are rejected.
 
 ---
 
@@ -452,6 +476,47 @@ n8n_executions <id> [limit]      # List recent executions
 n8n_exec_errors <exec_id>        # Show only error nodes from an execution
 n8n_stop_exec <exec_id>          # Stop a running execution
 ```
+
+---
+
+## Testing
+
+The CLI ships with a security test suite (vitest) covering the vulnerabilities
+most likely to appear in automation tooling:
+
+```bash
+npm test
+```
+
+```
+✓ tests/security/cmd-injection.test.js     (2 tests)
+✓ tests/security/path-traversal.test.js   (4 tests)
+✓ tests/security/input-validation.test.js (8 tests)
+
+Test Files  3 passed
+Tests       14 passed
+```
+
+Tests follow the **RED → GREEN → REFACTOR** protocol: each test proves a vulnerability
+cannot be exploited, and will fail if the fix is ever reverted. Contributions must
+keep all 14 tests green.
+
+---
+
+## Contributing
+
+1. Fork the repo and create a feature branch
+2. Run `bash setup.sh` to install dependencies
+3. Make your changes
+4. Run `npm test` — all 14 security tests must pass
+5. Run `npm run audit` — tdd-audit scan must return clean
+6. Submit a PR — the CI gate validates both automatically
+
+When adding new CLI commands that accept user-controlled paths or shell arguments,
+follow the patterns established in `lib/cli.js`:
+- Use `safeWriteOutput()` for any file write from a user argument
+- Use `curlSync()` (spawnSync args array) — never `execSync` with template literals
+- Use `Array.isArray()` and `typeof` guards on any parsed JSON fields
 
 ---
 
