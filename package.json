@@ -41,6 +41,8 @@
     "gitignore"
   ],
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
     "tdd-audit": "tdd-audit",
     "audit": "tdd-audit",
     "health": "node bin/n8n-creator.js health",
@@ -56,5 +58,8 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.1"
   }
 }
