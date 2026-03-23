@@ -425,15 +425,32 @@ if (!email?.includes('@')) return [{json: {error: 'invalid_email'}}];
 
 ### Git Save (every workflow, every change)
 
-Save to the git-tracked folder structure **before** marking Stage 5 complete:
+Save to the git-tracked folder structure **before** marking Stage 5 complete.
+
+**Every workflow folder MUST contain all four files. CI will reject any folder missing one.**
 
 ```
 ./workflows/
   <project-name>/
     workflow.json          ← exported workflow JSON from n8n API
     README.md              ← purpose, trigger URL, credentials needed, env vars
+    .env.example           ← all env vars the workflow needs (no real values)
     deploy.sh              ← import/activate script (see below)
-    rollback.sh            ← deactivate + import previous version
+```
+
+**Scaffold a new workflow folder (always use this — never create manually):**
+
+```bash
+bash scripts/new-workflow.sh <project-name>
+# Creates ./workflows/<project-name>/ with all four required files pre-filled
+```
+
+**Validate the folder before committing:**
+
+```bash
+bash scripts/validate-workflows.sh
+# Checks every workflow folder for required files + valid JSON
+# Must exit 0 before committing
 ```
 
 **Export workflow to file:**
@@ -537,6 +554,20 @@ echo "All workflows deployed."
 cd ./workflows
 git add .
 git commit -m "workflow: <project-name> — <brief description of change>"
+```
+
+**`.env.example` template for each workflow:**
+
+```bash
+# n8n connection — required by deploy.sh
+N8N_API_URL=https://your-n8n-instance.com
+N8N_API_KEY=your-api-key-here
+N8N_WEBHOOK_BASE_URL=https://your-n8n-instance.com
+
+# Workflow-specific variables — list every var this workflow reads
+# Example:
+# SLACK_WEBHOOK_URL=https://hooks.slack.com/...
+# BIGQUERY_PROJECT=my-gcp-project
 ```
 
 **README.md template for each workflow:**

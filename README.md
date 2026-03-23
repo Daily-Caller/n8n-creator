@@ -17,12 +17,13 @@
 - [Quick Start](#quick-start)
 - [How It Works](#how-it-works)
 - [CI/CD Integration](#cicd-integration)
+- [Workflow Folder Standard](#workflow-folder-standard)
 - [The Learning System](#the-learning-system)
 - [Commands](#commands)
 - [The 7-Stage Security Protocol](#the-7-stage-security-protocol)
 - [Environment Variables](#environment-variables)
 - [What's Included After init](#whats-included-after-init)
-- [Shell API Helpers](#shell-api-helpers)
+- [Shell Helpers](#shell-helpers)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [Publishing](#publishing)
@@ -151,6 +152,49 @@ The PR comment shows something like:
 **For PMs:** No workflow with an unauthenticated webhook, hardcoded secret, or
 missing error handler can reach production without someone manually overriding the
 CI check. The gate is always on. You see it on every PR.
+
+---
+
+## Workflow Folder Standard
+
+Every workflow lives in its own folder under `workflows/`. CI blocks any PR where a
+workflow folder is missing required files. No exceptions.
+
+### Required structure
+
+```
+workflows/
+  my-workflow-name/
+    workflow.json     ← n8n export (from API or UI)
+    README.md         ← purpose, trigger, credentials, data flow
+    .env.example      ← every env var this workflow reads (no real values)
+    deploy.sh         ← idempotent create-or-update script
+```
+
+### Scaffold a new workflow
+
+Always use the scaffold command — never create folders manually:
+
+```bash
+bash scripts/new-workflow.sh my-workflow-name
+# Creates workflows/my-workflow-name/ with all four required files pre-filled
+```
+
+### Validate before committing
+
+```bash
+bash scripts/validate-workflows.sh
+# Checks every workflow folder for required files + valid JSON
+# Must exit 0 before committing
+```
+
+### CI enforcement
+
+`validate-workflows.yml` runs on every push and PR that touches `workflows/**`.
+It checks every subfolder for the four required files and validates `workflow.json`
+is parseable JSON. The merge is blocked if any check fails.
+
+This runs alongside the security audit gate (`n8n-audit.yml`) — both must pass.
 
 ---
 
@@ -391,7 +435,8 @@ your-project/
 ├── .env.example                      ← committed template
 ├── SKILL.md                          ← the full 7-stage build protocol
 ├── .github/workflows/
-│   └── n8n-audit.yml                 ← CI gate (with --ci or --all)
+│   ├── n8n-audit.yml                 ← security audit gate (with --ci or --all)
+│   └── validate-workflows.yml        ← workflow folder structure gate
 ├── .claude/commands/
 │   └── n8n-creator.md                ← /n8n-creator skill for Claude Code
 ├── references/
@@ -404,18 +449,33 @@ your-project/
 │   └── patterns/                     ← your team's learned patterns (grows over time)
 ├── scripts/
 │   ├── n8n-api.sh                    ← 12 shell functions for the n8n REST API
-│   └── health-check.sh               ← connectivity + error diagnostics
+│   ├── health-check.sh               ← connectivity + error diagnostics
+│   ├── new-workflow.sh               ← scaffold a new workflow folder (required files)
+│   └── validate-workflows.sh         ← lint all workflow folders before committing
 └── workflows/
     ├── launch-all.sh                 ← deploy all workflows at once
     └── _templates/
         ├── README.md                 ← workflow documentation template
+        ├── .env.example              ← env var template for new workflows
         ├── deploy.sh                 ← idempotent create-or-update deploy script
         └── rollback.sh               ← git-based rollback to previous version
 ```
 
 ---
 
-## Shell API Helpers
+## Shell Helpers
+
+### Workflow management
+
+```bash
+# Scaffold a new workflow folder (always use this, never create manually)
+bash scripts/new-workflow.sh <project-name>
+
+# Validate all workflow folders — run before every commit
+bash scripts/validate-workflows.sh
+```
+
+### n8n REST API functions
 
 After `source scripts/n8n-api.sh`, you have 12 ready-to-use functions:
 

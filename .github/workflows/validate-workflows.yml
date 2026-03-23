@@ -1,0 +1,22 @@
+name: Validate Workflows
+
+on:
+  push:
+    paths:
+      - 'workflows/**'
+  pull_request:
+    paths:
+      - 'workflows/**'
+
+jobs:
+  validate:
+    name: Validate workflow folder structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Validate workflow folders
+        run: bash scripts/validate-workflows.sh
