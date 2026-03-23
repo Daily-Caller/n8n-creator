@@ -1,6 +1,6 @@
 {
   "name": "@lhi/n8n-creator",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Secure n8n workflow builder with mandatory TDD audit on every build",
   "keywords": [
     "n8n",
