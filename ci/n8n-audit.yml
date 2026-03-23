@@ -1,0 +1,126 @@
+name: n8n Workflow Audit
+
+on:
+  pull_request:
+    paths:
+      - 'workflows/**'
+      - '**.workflow.json'
+  push:
+    branches: [main, master]
+    paths:
+      - 'workflows/**'
+
+jobs:
+  audit:
+    name: Validate & Audit Workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install n8n-creator
+        run: npm install -g @daily-caller/n8n-creator
+
+      - name: Validate workflow JSON
+        id: validate
+        run: |
+          n8n-creator validate workflows/ --ci 2>&1 | tee /tmp/validate-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Run security audit
+        id: audit
+        run: |
+          n8n-creator audit 2>&1 | tee /tmp/audit-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Post results to PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const validateOutput = fs.existsSync('/tmp/validate-output.txt')
+              ? fs.readFileSync('/tmp/validate-output.txt', 'utf8').trim()
+              : '(no output)';
+
+            const auditOutput = fs.existsSync('/tmp/audit-output.txt')
+              ? fs.readFileSync('/tmp/audit-output.txt', 'utf8').trim()
+              : '(no output)';
+
+            const validatePass = '${{ steps.validate.outputs.exit_code }}' === '0';
+            const auditPass    = '${{ steps.audit.outputs.exit_code }}' === '0';
+            const allPass      = validatePass && auditPass;
+
+            const statusIcon = allPass ? '✅' : '❌';
+            const statusText = allPass ? 'All checks passed' : 'One or more checks failed';
+
+            const body = `## ${statusIcon} n8n Workflow Audit — ${statusText}
+
+### Schema Validation ${validatePass ? '✅' : '❌'}
+
+<details>
+<summary>View output</summary>
+
+\`\`\`
+${validateOutput}
+\`\`\`
+
+</details>
+
+### Security Audit ${auditPass ? '✅' : '❌'}
+
+<details>
+<summary>View output</summary>
+
+\`\`\`
+${auditOutput}
+\`\`\`
+
+</details>
+
+---
+*Powered by [@daily-caller/n8n-creator](https://github.com/Daily-Caller/n8n-creator)*`;
+
+            // Find existing comment to update
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('n8n Workflow Audit')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner:        context.repo.owner,
+                repo:         context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if checks did not pass
+        if: steps.validate.outputs.exit_code != '0' || steps.audit.outputs.exit_code != '0'
+        run: |
+          echo "::error::Workflow audit failed. Fix all validation and security issues before merging."
+          exit 1

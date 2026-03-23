@@ -59,6 +59,35 @@ Stage 6 — /tdd-audit                 → REQUIRED: clean audit before marking 
 
 ---
 
+## Pattern Library — Check Before Every Build
+
+Before Stage 1, check `references/patterns/` for patterns that match your task.
+These are **proven production patterns** that have passed the full 7-stage protocol.
+
+```bash
+# List available patterns
+ls references/patterns/ 2>/dev/null
+
+# Search by keyword (service name, node type, operation)
+grep -rl "webhook\|bigquery\|postgres\|slack" references/patterns/ 2>/dev/null
+```
+
+**How to apply a pattern:**
+1. Read the `<!-- keywords: ... -->` line in each `.md` file in `references/patterns/`
+2. If keywords overlap with the current workflow goal, load that pattern
+3. Follow the "Critical Rules" section exactly — these capture production-verified gotchas
+4. Use the Node Stack and Connection Flow as your build scaffold
+
+**After every successful build + clean tdd-audit**, capture the pattern:
+```bash
+n8n-creator learn workflows/<project>/workflow.json
+```
+
+This saves a keyword-tagged pattern to `references/patterns/` so every future build
+automatically benefits from it. The pattern library grows with your team's expertise.
+
+---
+
 ## Stage 0 — Load .env & Detect Mode
 
 **Always first.** Never hardcode server URLs, API keys, or credentials.

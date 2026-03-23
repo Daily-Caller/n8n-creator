@@ -1,7 +1,7 @@
 {
   "name": "@daily-caller/n8n-creator",
-  "version": "1.1.0",
-  "description": "Secure n8n workflow builder with mandatory TDD audit on every build",
+  "version": "1.2.0",
+  "description": "Secure n8n workflow builder — CI gates, pattern learning, multi-IDE support, and mandatory TDD audit on every build",
   "keywords": [
     "n8n",
     "workflow",
@@ -10,9 +10,13 @@
     "tdd",
     "audit",
     "claude",
+    "gemini",
+    "cursor",
     "ai-agent",
     "skill",
-    "webhook"
+    "webhook",
+    "ci",
+    "deploy"
   ],
   "homepage": "https://github.com/daily-caller/n8n-creator",
   "repository": {
@@ -27,6 +31,7 @@
   "files": [
     "bin/",
     "lib/",
+    "ci/",
     "references/",
     "workflows/_templates/",
     "workflows/launch-all.sh",
