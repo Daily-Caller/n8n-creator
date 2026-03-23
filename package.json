@@ -1,21 +1,54 @@
 {
-  "name": "n8n-creator",
+  "name": "@lhi/n8n-creator",
   "version": "1.0.0",
   "description": "Secure n8n workflow builder with mandatory TDD audit on every build",
-  "private": true,
+  "keywords": [
+    "n8n",
+    "workflow",
+    "automation",
+    "security",
+    "tdd",
+    "audit",
+    "claude",
+    "ai-agent",
+    "skill",
+    "webhook"
+  ],
+  "homepage": "https://github.com/lcanady/n8n-creator",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lcanady/n8n-creator.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "n8n-creator": "./bin/n8n-creator.js"
+  },
+  "main": "./lib/cli.js",
+  "files": [
+    "bin/",
+    "lib/",
+    "references/",
+    "workflows/_templates/",
+    "workflows/launch-all.sh",
+    "scripts/",
+    "SKILL.md",
+    ".env.example",
+    ".gitignore"
+  ],
   "scripts": {
     "tdd-audit": "tdd-audit",
     "audit": "tdd-audit",
-    "health": "bash scripts/health-check.sh",
-    "launch-all": "bash workflows/launch-all.sh",
-    "n8n-api": "bash scripts/n8n-api.sh"
+    "health": "node bin/n8n-creator.js health",
+    "launch-all": "bash workflows/launch-all.sh"
   },
   "dependencies": {
     "@lhi/tdd-audit": "^1.4.1",
     "dotenv": "^16.4.7"
   },
-  "devDependencies": {},
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
