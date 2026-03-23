@@ -1,0 +1,21 @@
+{
+  "name": "n8n-creator",
+  "version": "1.0.0",
+  "description": "Secure n8n workflow builder with mandatory TDD audit on every build",
+  "private": true,
+  "scripts": {
+    "tdd-audit": "tdd-audit",
+    "audit": "tdd-audit",
+    "health": "bash scripts/health-check.sh",
+    "launch-all": "bash workflows/launch-all.sh",
+    "n8n-api": "bash scripts/n8n-api.sh"
+  },
+  "dependencies": {
+    "@lhi/tdd-audit": "^1.4.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18"
+  }
+}
