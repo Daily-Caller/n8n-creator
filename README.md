@@ -105,27 +105,16 @@ Then open your AI coding tool and run `/n8n-creator` to start building.
 Every workflow build follows a mandatory 7-stage pipeline. No stage can be skipped,
 no matter how small the change.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  Pattern Library Check                                          │
-│  Search references/patterns/ for proven matching patterns       │
-└──────────────────────────┬──────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Stage 0 │ Load .env & detect mode (MCP or REST API)           │
-│  Stage 1 │ Threat model & design — confirmed by user           │
-│  Stage 2 │ Build — workflow created in n8n                     │
-│  Stage 3 │ Security audit — all 10 checks must pass           │
-│  Stage 4 │ Validate & test — 7 required test scenarios        │
-│  Stage 5 │ Harden & git save — versioned in ./workflows/      │
-│  Stage 6 │ /tdd-audit — clean scan required to ship           │
-└──────────────────────────┬──────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  n8n-creator deploy  — validate → push to n8n → activate       │
-│  n8n-creator learn   — extract pattern → references/patterns/  │
-└─────────────────────────────────────────────────────────────────┘
-```
+1. **Pattern Library Check** — search `references/patterns/` for proven matching patterns
+2. **Stage 0** — load `.env` and detect mode (MCP or REST API)
+3. **Stage 1** — threat model and design, confirmed by user
+4. **Stage 2** — build the workflow in n8n
+5. **Stage 3** — security audit, all 10 checks must pass
+6. **Stage 4** — validate and test, 7 required test scenarios
+7. **Stage 5** — harden and git save, versioned in `./workflows/`
+8. **Stage 6** — `/tdd-audit`, clean scan required to ship
+9. **Deploy** — `n8n-creator deploy` validates, pushes to n8n, activates
+10. **Learn** — `n8n-creator learn` extracts the pattern to `references/patterns/`
 
 Your AI coding assistant (Claude, Gemini, Cursor, Copilot, OpenCode, Antigravity)
 follows this protocol when you run `/n8n-creator` inside your IDE.
@@ -150,20 +139,15 @@ This installs `.github/workflows/n8n-audit.yml`, which:
 - **Posts results as a PR comment** — updates in place on each push, no spam
 - **Blocks merge** if any check fails
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ✅ n8n Workflow Audit — All checks passed                     │
-│                                                                 │
-│  Schema Validation ✅                                          │
-│  ▸ PASS  workflows/stripe-webhook/workflow.json                │
-│  ▸ PASS  workflows/slack-notifier/workflow.json                │
-│                                                                 │
-│  Security Audit ✅                                             │
-│  ▸ No issues found                                             │
-│                                                                 │
-│  Powered by @daily-caller/n8n-creator                          │
-└─────────────────────────────────────────────────────────────────┘
-```
+The PR comment shows something like:
+
+> **✅ n8n Workflow Audit — All checks passed**
+>
+> Schema Validation ✅ — `workflows/stripe-webhook/workflow.json` PASS, `workflows/slack-notifier/workflow.json` PASS
+>
+> Security Audit ✅ — No issues found
+>
+> _Powered by @daily-caller/n8n-creator_
 
 **For PMs:** No workflow with an unauthenticated webhook, hardcoded secret, or
 missing error handler can reach production without someone manually overriding the
@@ -434,27 +418,16 @@ your-project/
 
 ## The Full Story for Your PM
 
-```
-Developer opens PR with new workflow JSON
-        ↓
-GitHub Actions runs: validate + tdd-audit
-        ↓
-PR comment shows pass/fail with full output (updates in place, no spam)
-        ↓
-Merge is blocked until all checks pass
-        ↓
-Engineer merges → runs: n8n-creator deploy --env=prod
-        ↓
-Workflow is live on n8n, activated, tracked in git
-        ↓
-Engineer runs: n8n-creator learn workflow.json
-        ↓
-Pattern saved → references/patterns/
-        ↓
-Next engineer building a similar workflow gets this pattern automatically
-        ↓
-n8n-creator report → weekly health snapshot in one command
-```
+1. Developer opens a PR with new workflow JSON
+2. GitHub Actions runs `validate` + `tdd-audit` automatically
+3. A PR comment shows pass/fail with full output — updates in place, no spam
+4. Merge is blocked until all checks pass
+5. Engineer merges, then runs `n8n-creator deploy --env=prod`
+6. Workflow is live on n8n, activated, and tracked in git
+7. Engineer runs `n8n-creator learn workflow.json`
+8. Pattern is saved to `references/patterns/`
+9. The next engineer building a similar workflow gets that pattern automatically
+10. `n8n-creator report` delivers a weekly health snapshot in one command
 
 Every team member builds on what the last one learned.
 Every workflow is audited before it ships.
