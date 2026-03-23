@@ -1,6 +1,6 @@
 {
   "name": "@lhi/n8n-creator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Secure n8n workflow builder with mandatory TDD audit on every build",
   "keywords": [
     "n8n",
@@ -33,7 +33,7 @@
     "scripts/",
     "SKILL.md",
     ".env.example",
-    ".gitignore"
+    "gitignore"
   ],
   "scripts": {
     "tdd-audit": "tdd-audit",
