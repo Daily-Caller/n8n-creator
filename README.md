@@ -22,7 +22,6 @@
 - [The 7-Stage Security Protocol](#the-7-stage-security-protocol)
 - [Environment Variables](#environment-variables)
 - [What's Included After init](#whats-included-after-init)
-- [The Full Story for Your PM](#the-full-story-for-your-pm)
 - [Shell API Helpers](#shell-api-helpers)
 - [Testing](#testing)
 - [Contributing](#contributing)
@@ -413,25 +412,6 @@ your-project/
         ├── deploy.sh                 ← idempotent create-or-update deploy script
         └── rollback.sh               ← git-based rollback to previous version
 ```
-
----
-
-## The Full Story for Your PM
-
-1. Developer opens a PR with new workflow JSON
-2. GitHub Actions runs `validate` + `tdd-audit` automatically
-3. A PR comment shows pass/fail with full output — updates in place, no spam
-4. Merge is blocked until all checks pass
-5. Engineer merges, then runs `n8n-creator deploy --env=prod`
-6. Workflow is live on n8n, activated, and tracked in git
-7. Engineer runs `n8n-creator learn workflow.json`
-8. Pattern is saved to `references/patterns/`
-9. The next engineer building a similar workflow gets that pattern automatically
-10. `n8n-creator report` delivers a weekly health snapshot in one command
-
-Every team member builds on what the last one learned.
-Every workflow is audited before it ships.
-Your PM can see the state of every automation in one command.
 
 ---
 
